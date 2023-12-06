@@ -18,7 +18,12 @@ def search_recipe():
     return jsonify(result)
 
 def search_for_recipe(recipe_title):
-    book = RecipeBook(output_folder='RecipeBook')
-    extracted_recipe = book.extract_recipe(recipe_title)
+    book = RecipeBook(output_folder='RecipeBook')    
 
-    return extracted_recipe
+    try:
+        prospect_recipe = book.check_recipe_existence(recipe_title=recipe_title)
+
+        if prospect_recipe == 1 or prospect_recipe == None:
+            return book.check_partial_existence(recipe_title)
+    except:
+        return "recipe searching failed"

@@ -70,7 +70,33 @@ class RecipeBook:
                         
                         return recipe_file
                     
+    def check_partial_existence(self, partial_string):
+        #for loop through <a-z>_recipes.json files
+        recipe_files = []
+        for letter in 'abcdefghijklmnopqrstuvwxyz':
+            json_filename = f"{letter}_recipes.json"
+            json_path = self.output_folder / json_filename
+            recipe_files.append(json_path)
+        
+        matching_recipes = []
+        split_partial_string = [partial.lower() for partial in partial_string.split()]
+        for file in recipe_files:
+            fj = self.extract_json(file)
 
+            for recipe_title in fj.keys():
+                
+                split_recipe_title = [word.lower() for word in recipe_title.split()]
+                
+                num_matches = sum(word in split_recipe_title for word in split_partial_string)
+
+                if num_matches > 0:
+                    matching_recipes.append((recipe_title, num_matches))
+
+        matching_recipes = sorted(matching_recipes, key=lambda x: x[1], reverse=True)
+
+        return [recipe[0] for recipe in matching_recipes]
+
+    
     def check_recipe_existence(self, category_title = None, recipe_title = None):
         recipe_file = self.check_file_string(recipe_title=recipe_title)
 
