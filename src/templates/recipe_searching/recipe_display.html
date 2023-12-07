@@ -1,14 +1,21 @@
-{% block main_container%}
+
+{% block main_container %}
 
 <div>
-    <h1>Recipe_Title_Here</h1>
+    <h1>{{ recipe_name }}</h1>
+    <br>
     <h2>Ingredients</h2>
     <ul>
-        <li>ingredient_here</li>
+        {% for ingredient in recipe_data.ingredient %}
+        <li>{{ ingredient }}</li>
+        {% endfor %}
     </ul>
+    <br>
     <h2>Instructions</h2>
     <ol>
-        <li>instruction_here</li>
+        {% for instruction in recipe_data.instructions %}
+        <li>{{ instruction }}</li>
+        {% endfor %}
     </ol>
 </div>
 {% endblock %}

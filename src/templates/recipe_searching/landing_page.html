@@ -26,58 +26,69 @@
 
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Get the search button
-        var searchButton = document.getElementById('confirm_search');
+document.addEventListener('DOMContentLoaded', function () {
+    // Get the search button
+    var searchButton = document.getElementById('confirm_search');
 
-        // Add a click event listener to the search button
-        searchButton.addEventListener('click', function () {
-            // Get the input values
-            var titleInput = document.getElementById('title').value;
+    // Add a click event listener to the search button
+    searchButton.addEventListener('click', function () {
+        // Get the input values
+        var titleInput = document.getElementById('title').value;
 
-            // Create a new XMLHttpRequest object
-            var xhr = new XMLHttpRequest();
+        // Create a new XMLHttpRequest object
+        var xhr = new XMLHttpRequest();
 
-            // Configure it to send a POST request to the /search_recipe route
-            xhr.open('POST', '/search_recipe', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        // Configure it to send a POST request to the /search_recipe route
+        xhr.open('POST', '/search_recipe', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-            // Define the callback function when the request is complete
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // Parse the JSON response
-                    var response = JSON.parse(xhr.responseText);
+        // Define the callback function when the request is complete
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Parse the JSON response
+                var recipes = JSON.parse(xhr.responseText);
 
-                    // Check if the recipe is not found
-                    if (response[titleInput] === 'not found') {
-                        // Display a message on the webpage
-                        alert('Recipe not found!');
-                    } else {
-                        // Update the recipe list based on the response
-                        updateRecipeList(response);
-                    }
+                // Check if the recipe array is not empty
+                if (recipes.length === 0) {
+                    // Display a message on the webpage
+                    alert('No recipes found!');
+                } else {
+                    // Update the recipe list based on the response
+                    updateRecipeList(recipes);
                 }
-            };
-
-            // Send the request with the title as data
-            xhr.send('recipe_title=' + encodeURIComponent(titleInput));
-        });
-
-        // Function to update the recipe list
-        function updateRecipeList(recipes) {
-            // Get the recipe list element
-            var recipeList = document.getElementById('recipe_list');
-
-            // Clear the existing list
-            recipeList.innerHTML = '';
-
-            // Populate the list with the retrieved recipes
-            for (var recipeTitle in recipes) {
-                var listItem = document.createElement('li');
-                listItem.textContent = recipeTitle + ': ' + recipes[recipeTitle];
-                recipeList.appendChild(listItem);
             }
-        }
+        };
+
+        // Send the request with the title as data
+        xhr.send('recipe_title=' + encodeURIComponent(titleInput));
     });
+
+    // Function to update the recipe list
+    function updateRecipeList(recipes) {
+        // Get the recipe list element
+        var recipeList = document.getElementById('recipe_list');
+
+        // Clear the existing list
+        recipeList.innerHTML = '';
+
+        // Populate the list with the retrieved recipes
+        for (var i = 0; i < recipes.length; i++) {
+            // Create a list item
+            var listItem = document.createElement('li');
+
+            // Create an anchor tag with the generated URL
+            var anchor = document.createElement('a');
+            anchor.href = '/recipe/' + encodeURIComponent(recipes[i]);
+            anchor.textContent = recipes[i];
+
+            // Append the anchor tag to the list item
+            listItem.appendChild(anchor);
+
+            // Append the list item to the recipe list
+            recipeList.appendChild(listItem);
+        }
+    }
+});
+
 </script>
 {% endblock %}
