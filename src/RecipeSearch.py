@@ -13,22 +13,23 @@ def search_landing_page():
 @bp.route('/search_recipe', methods=['POST'])
 def search_recipe():
     recipe_title = request.form.get('recipe_title')
+    category = request.form.get('category')
 
-    result = search_for_recipe(recipe_title)
+    result = search_for_recipe(recipe_title, category)
     if result == 1:
-        return jsonify({f'{recipe_title}': 'not found'})
+        return jsonify({f'{recipe_title}': 'not found'}), 404
     return jsonify(result)
+    
 
-def search_for_recipe(recipe_title):    
-
-    try:
-        list_of_partials = book.check_partial_existence(recipe_title)
-
-
-
-        return book.check_partial_existence(recipe_title)
-    except:
-        return "recipe searching failed"
+def search_for_recipe(recipe_title=None, category=None):
+    
+    if recipe_title is None or recipe_title == '':
+        return book.search_by_category(category=category)
+    else:
+        possible_titles = book.check_partial_existence(recipe_title)
+        possible_category_titles = book.search_by_category(category=category)
+        definite_titles = [title for title in possible_titles if title in possible_category_titles]
+        return definite_titles
 
 @bp.route('/recipe/<selected_link>')
 def dynamic_route(selected_link):
@@ -40,3 +41,4 @@ def dynamic_route(selected_link):
         "instructions": json_data["instructions"]
     }
     return render_template('recipe_searching/recipe_display.html', recipe_name=recipe_title, recipe_data=recipe_data)
+

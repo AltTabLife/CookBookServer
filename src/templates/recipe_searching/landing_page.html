@@ -12,8 +12,8 @@
     <span>Recipe Title:</span>
     <input type="text" id="title">
     
-    <span>Ingredients:</span>
-    <input type="text" id="ingredients">
+    <span>Category:</span>
+    <input type="text" id="category">
     
     <br>
     
@@ -27,41 +27,32 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // Get the search button
     var searchButton = document.getElementById('confirm_search');
 
-    // Add a click event listener to the search button
     searchButton.addEventListener('click', function () {
-        // Get the input values
         var titleInput = document.getElementById('title').value;
+        var categoryInput = document.getElementById('category').value;
 
-        // Create a new XMLHttpRequest object
         var xhr = new XMLHttpRequest();
-
-        // Configure it to send a POST request to the /search_recipe route
         xhr.open('POST', '/search_recipe', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-        // Define the callback function when the request is complete
         xhr.onload = function () {
             if (xhr.status === 200) {
-                // Parse the JSON response
                 var recipes = JSON.parse(xhr.responseText);
 
-                // Check if the recipe array is not empty
                 if (recipes.length === 0) {
-                    // Display a message on the webpage
                     alert('No recipes found!');
                 } else {
-                    // Update the recipe list based on the response
                     updateRecipeList(recipes);
                 }
             }
         };
 
-        // Send the request with the title as data
-        xhr.send('recipe_title=' + encodeURIComponent(titleInput));
+        // Include the category value in the request body
+        xhr.send('recipe_title=' + encodeURIComponent(titleInput) + '&category=' + encodeURIComponent(categoryInput));
     });
+
 
     // Function to update the recipe list
     function updateRecipeList(recipes) {

@@ -96,7 +96,10 @@ class RecipeBook:
 
         return [recipe[0] for recipe in matching_recipes]
 
-    
+    '''
+    Returns True if recipe is found in the file
+    Returns False if recipe is not found
+    '''
     def check_recipe_existence(self, category_title = None, recipe_title = None):
         recipe_file = self.check_file_string(recipe_title=recipe_title)
 
@@ -221,7 +224,8 @@ class RecipeBook:
                 recipe_title:{
                     'link':recipe_link,
                     'ingredient':ingredients_array,
-                    'instructions':instructions_array
+                    'instructions':instructions_array,
+                    'category': category_title
                     }
             }
             if recipe_title in rf_dict:
@@ -233,3 +237,89 @@ class RecipeBook:
                     rf.write(json.dumps(rf_dict, indent=4))
 
 
+    '''
+Script to swap from category sort to the standard <letter>_recipes.json
+
+While category sort was fine originally, it's easier to search for recipes when sorted by the first letter, so I'm changing the default behavior to that, but will still leave the category option available.
+
+New methods/functions to come will be defaulted to "title" based sort (<letter>_recipes.json), with True and False taking on meaning in:
+    True == "file" category sort
+    False == "title" based sort with categories fed as an array attribute of the recipe title.
+
+In this particular script, categories stands for whether or not they will exist in the list based organization output, so standard "True"/"False"
+Default is the category attribute will exist
+'''
+    def convert_to_title_based(self, categories=True):
+        #Find the files that aren't title based
+        ## Populate array of current non-title json files
+        ftr = []
+        for file in self.output_folder.iterdir():
+            if file.is_file() and file.suffix == '.json':
+                split_filename = file.stem.split('_')
+                if len(split_filename[0]) == 1:
+                    continue
+                    
+                ftr.append(file)
+        
+        ##For each non-title file, iterate through the recipes, adding the category as a parameter like {category: <category>}
+
+        for non_title_file in ftr:
+            fd = self.extract_json(non_title_file)
+            category = non_title_file.stem.split('_')[0]
+            for recipe in fd.keys():
+                ###If it doesn't exist, move the dict to the new file
+                if recipe == 'links' or self.check_recipe_existence(recipe_title=recipe):
+                    continue
+                else:
+                    self.add_recipe(
+                        category_title=category, 
+                        recipe_title=recipe,
+                        recipe_link=fd[recipe]['link'],
+                        ingredients_array=fd[recipe]['ingredient'],
+                        instructions_array=fd[recipe]['instructions']
+                        )
+    
+    #Sorting funtions by different sections within the json
+
+    '''
+    Updates existing or creates category file (if none exists). Simple format below for fast searching anything with a category tag, or under a category file
+    
+    recipe_categories.json
+    {
+    <category>:[<recipe_titles>] 
+    }
+    '''
+
+    '''
+    Search for recipes by category
+    '''
+    def search_by_category(self, category):
+        #loop through recipe files
+        ##establish what will be returned
+        category_array = []
+        
+        ##check category sort    
+        if self.category_sort == False:
+            ##loop through title-based files
+            ftr = []
+            for file in self.output_folder.iterdir():
+                if file.is_file() and file.suffix == '.json':
+                    split_filename = file.stem.split('_')
+                    if len(split_filename[0]) == 1:
+                        ftr.append(file)
+        
+            for title_file in ftr:
+                fd = self.extract_json(title_file)
+                for recipe in fd:
+                    if 'category' not in fd[recipe]:
+                        continue
+                    elif category in fd[recipe]['category']:
+                        category_array.append(recipe)
+            
+        elif self.category_sort == True:
+            for file in self.output_folder.iterdir():
+                split_filename = file.stem.split('_')
+                if split_filename[0] == category and file.suffix == '.json':
+                    category_array = list(self.extract_json(file).items())
+
+        return category_array
