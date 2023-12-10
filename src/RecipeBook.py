@@ -297,7 +297,7 @@ Default is the category attribute will exist
         #loop through recipe files
         ##establish what will be returned
         category_array = []
-        
+        category = category.lower()
         ##check category sort    
         if self.category_sort == False:
             ##loop through title-based files
@@ -313,13 +313,12 @@ Default is the category attribute will exist
                 for recipe in fd:
                     if 'category' not in fd[recipe]:
                         continue
-                    elif category in fd[recipe]['category']:
+                    elif category in fd[recipe]['category'].lower():
                         category_array.append(recipe)
             
         elif self.category_sort == True:
-            for file in self.output_folder.iterdir():
-                split_filename = file.stem.split('_')
-                if split_filename[0] == category and file.suffix == '.json':
-                    category_array = list(self.extract_json(file).items())
+            category_file = self.check_file_string(category_title=category)
+            
+            category_array = list(self.extract_json(category_file).items())
 
         return category_array
