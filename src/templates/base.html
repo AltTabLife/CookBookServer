@@ -6,9 +6,80 @@
         <title>{% block title %}{%endblock%}</title>
         <meta name="description" content="digital cookbook">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+            }
+    
+            nav {
+                background-color: #333;
+                overflow: hidden;
+            }
+    
+            nav a {
+                float: left;
+                display: block;
+                color: #f2f2f2;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+            }
+    
+            nav a:hover {
+                background-color: #ddd;
+                color: black;
+            }
+    
+            .dropdown {
+                float: left;
+                overflow: hidden;
+            }
+    
+            .dropdown:hover .dropbtn {
+                background-color: #555;
+            }
+    
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                background-color: #f9f9f9;
+                min-width: 160px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 1;
+            }
+    
+            .dropdown-content a {
+                float: none;
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+                text-align: left;
+            }
+    
+            .dropdown-content a:hover {
+                background-color: #ddd;
+            }
+    
+            .dropdown:hover .dropdown-content {
+                display: block;
+            }
+        </style>
     </head>
     <body>
+
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+
+            <div class="dropdown">
+                <a class="dropbtn" href="#">Recipes</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('RecipeSearch.search_landing_page') }}">Search Recipes</a>
+                    <a href="{{ url_for('RecipeSearch.add_custom_recipe') }}">Add Custom Recipe</a>
+                </div>
+            </div>
+        </nav>
 
         <div class="main_container">
             {% block main_container %}{% endblock %}

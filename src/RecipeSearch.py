@@ -42,3 +42,22 @@ def dynamic_route(selected_link):
     }
     return render_template('recipe_searching/recipe_display.html', recipe_name=recipe_title, recipe_data=recipe_data)
 
+@bp.route('/add_custom_recipe')
+def add_custom_recipe():
+    return render_template('recipe_searching/add_custom_recipe.html')
+
+@bp.route('/acr', methods=['POST'])
+def acr():
+
+    recipe_data = request.json
+    
+    if not book.check_recipe_existence(recipe_title=recipe_data['title']):
+        book.add_recipe(
+            category_title=recipe_data['categories'],
+            recipe_title=recipe_data['title'],
+            ingredients_array=recipe_data['ingredients'],
+            instructions_array=recipe_data['instructions']
+            )
+        return "Recipe Added Successfully", 200
+    else:
+        return "Recipe Already Exists", 409
