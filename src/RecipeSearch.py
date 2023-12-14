@@ -1,5 +1,8 @@
 from flask import Blueprint, render_template, jsonify, request
 from .RecipeBook import RecipeBook
+import cv2
+import easyocr
+import numpy as np
 
 
 bp = Blueprint('RecipeSearch', __name__)
@@ -61,3 +64,49 @@ def acr():
         return "Recipe Added Successfully", 200
     else:
         return "Recipe Already Exists", 409
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}  # Add more extensions as needed
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def sort_coordinates(coordinates):
+    return sorted(coordinates, key=lambda x: (x[0], x[1]))
+
+@bp.route('/upload_recipe_file', methods=['POST'])
+def upload_recipe_file():
+    # Check if the 'recipePhoto' file is in the request.files
+    if 'recipePhoto' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['recipePhoto']
+
+    # Check if the file is selected
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    # Check if the file has an allowed extension
+    if file and allowed_file(file.filename):
+        # Read the image using OpenCV
+        img_stream = file.read()
+        img_array = np.frombuffer(img_stream, np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+
+        # Your image processing logic goes here
+        max_canvas_size = 2560
+        height, width, _ = img.shape
+        max_dimension = max(height, width)
+        scale_factor = min(1.0, max_canvas_size / max_dimension)
+
+        resized_img = cv2.resize(img, (int(width * scale_factor), int(height * scale_factor)))
+
+        reader = easyocr.Reader(['en'])
+
+        result = reader.readtext(resized_img, paragraph=True)
+
+        # Extract text and sort coordinates
+        sorted_result = [(sort_coordinates(item[0]), item[1]) for item in result]
+
+        return jsonify({'result': sorted_result})
+    else:
+        return jsonify({'error': 'Invalid file format'}), 400
