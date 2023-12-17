@@ -18,21 +18,46 @@ def search_recipe():
     recipe_title = request.form.get('recipe_title')
     category = request.form.get('category')
 
-    result = search_for_recipe(recipe_title, category)
+    result = search_for_recipe(recipe_title=recipe_title, category=category)
     if result == 1:
         return jsonify({f'{recipe_title}': 'not found'}), 404
     return jsonify(result)
     
 
-def search_for_recipe(recipe_title=None, category=None):
-    
-    if recipe_title is None or recipe_title == '':
-        return book.search_by_category(category=category)
-    else:
-        possible_titles = book.check_partial_existence(recipe_title)
-        possible_category_titles = book.search_by_category(category=category)
-        definite_titles = [title for title in possible_titles if title in possible_category_titles]
-        return definite_titles
+def search_for_recipe(**kwargs):
+    # Define the order of priority for criteria
+    possible_criteria = ['category', 'recipe_title']
+
+    # Initialize an empty dictionary to store actual criteria
+    actual_criteria = {}
+
+    # Update actual_criteria with the provided values
+    for criteria in possible_criteria:
+        if kwargs.get(criteria) is not None and kwargs.get(criteria) != '':
+            actual_criteria[criteria] = kwargs[criteria]
+
+    # Initialize a variable to store the final list of titles
+    returning_titles = []
+
+    # Iterate through possible criteria and perform searches
+    for criteria in possible_criteria:
+        if criteria in actual_criteria:
+            if criteria == 'recipe_title':
+                # Perform search based on recipe title
+                titles = book.check_partial_existence(actual_criteria[criteria])
+            elif criteria == 'category':
+                # Perform search based on category
+                titles = book.search_by_category(actual_criteria[criteria])
+
+            # Filter out titles not in returning_titles
+            if len(returning_titles) == 0:
+                returning_titles.extend(titles)
+            else:
+                returning_titles = [title for title in returning_titles if title in titles]
+
+    # Return the final list of titles
+    return returning_titles
+
 
 @bp.route('/recipe/<selected_link>')
 def dynamic_route(selected_link):
@@ -65,7 +90,10 @@ def acr():
     else:
         return "Recipe Already Exists", 409
 
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}  # Add more extensions as needed
+
+
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}  # Add more extensions as needed
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
