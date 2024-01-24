@@ -1,0 +1,15 @@
+#This is a working basic systemd service for the flask application. Change the user, venv, and paths to match appropriately
+
+[Unit]
+Description=uWSGI service for CookBookServer
+After=network.target
+
+[Service]
+User=user1
+Group=www-data
+WorkingDirectory=/srv/CookBookServer
+Environment="PATH=/srv/CookBookServer/.venv/bin"
+ExecStart=/srv/CookBookServer/.venv/bin/uwsgi --ini /srv/CookBookServer/uwsgi.ini
+
+[Install]
+WantedBy=multi-user.target
